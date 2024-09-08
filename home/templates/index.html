@@ -1,0 +1,81 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Word Matrix</title>
+    <script>
+        let matrix = [];  // To store the matrix state
+        let emptyCells = [];  // To track empty cells
+
+        // Initialize the matrix and empty cells
+        function initializeMatrix(rows, columns) {
+            matrix = Array.from({ length: rows }, () => Array(columns).fill(null));
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < columns; j++) {
+                    emptyCells.push({ row: i, col: j });
+                }
+            }
+            renderMatrix();
+        }
+
+        // Render matrix in the HTML table
+        function renderMatrix() {
+            const table = document.getElementById("matrix");
+            table.innerHTML = '';  // Clear previous content
+            matrix.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, colIndex) => {
+                    const td = document.createElement('td');
+                    td.textContent = cell ? cell : '';  // Display cell value if present
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+        }
+
+        // Handle word input and random placement
+        function placeWord() {
+            const word = document.getElementById("wordInput").value;
+            if (!word || emptyCells.length === 0) return;  // Exit if no input or matrix is full
+
+            // Choose a random empty cell
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            const { row, col } = emptyCells.splice(randomIndex, 1)[0];
+
+            // Place the word in the matrix
+            matrix[row][col] = word;
+
+            // Clear the input field
+            document.getElementById("wordInput").value = '';
+
+            // Re-render the matrix
+            renderMatrix();
+        }
+    </script>
+</head>
+<body>
+    <h1>Interactive Word Matrix</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create Matrix</button>
+    </form>
+
+    {% if matrix %}
+    <h2>Input Words One by One</h2>
+    <input type="text" id="wordInput" placeholder="Enter a word">
+    <button onclick="placeWord()">Place Word</button>
+
+    <h3>Your Matrix</h3>
+    <table id="matrix" border="1"></table>
+
+    <script>
+       
+        initializeMatrix({{matrix|length}}, {{matrix.0|length}});
+    </script>
+    {% endif %}
+</body>
+</html>
